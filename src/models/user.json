@@ -1,0 +1,37 @@
+[
+    {
+      "username": "Maxene",
+      "email": "max_tolentino@gmail.com",
+      "password": "Maxene",
+      "avatar_url": "./images/profile-pic.jpg",
+      "description": "Hey there, I'm Maxene, your casual restaurant reviewer! Driven by a love for exploring flavors and sharing culinary gems, I delve into local eateries, providing honest reviews and mouthwatering recommendations. Let's embark on this delicious journey together!"
+    },
+    {
+      "username": "Neo",
+      "email": "neo_rey@gmail.com",
+      "password": "Neo",
+      "avatar_url": "./images/profile-pic.jpg",
+      "description": "Food enthusiast! Always on the lookout for exciting new tastes and techniques. (Description about Neo's passion for food can be added when available)"
+    },
+    {
+      "username": "Fiona",
+      "email": "louise_amores@gmail.com",
+      "password": "Louise",
+      "avatar_url": "./images/profile-pic.jpg",
+      "description": "Food is my love language! I believe in the power of a delicious meal to connect people and create lasting memories. (Description about Fiona's specific food interests can be further added)"
+    },
+    {
+      "username": "Sophie",
+      "email": "wilbert_villagarcia@gmail.com",
+      "password": "Wilbert",
+      "avatar_url": "./images/profile-pic.jpg",
+      "description": "Food adventurer! From exploring local farmers markets to experimenting in the kitchen, I'm passionate about discovering new ingredients and creating culinary masterpieces. (Specific areas of food interest for Sophie can be mentioned here)"
+    },
+    {
+      "username": "Ricky",
+      "email": "juan_delacruz@gmail.com",
+      "password": "Juan",
+      "avatar_url": "./images/profile-pic.jpg",
+      "description": "Food brings people together! I love the joy of sharing a delicious meal with loved ones and exploring the cultural significance of food. (Specific food cultures or cuisines Ricky enjoys can be included)"
+    }
+  ]

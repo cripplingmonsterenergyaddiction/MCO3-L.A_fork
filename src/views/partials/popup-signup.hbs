@@ -1,0 +1,45 @@
+
+<!--POPUP-SIGNUP-->
+<form
+    name="signup"
+    action="/create-user"
+    method="POST"
+    class="popup-signup-content"
+    onsubmit="return verifyPassword()"
+    >
+    <h1 onclick="closeSignup()" id="close-login" type="submit">x</h1>
+    <img src="/images/LOGO-YL.png" alt="None" />
+
+    <input
+        id="email-signup"
+        name="user1"
+        type="text"
+        placeholder="Enter Email"
+        required
+    /> </input>
+
+    <input
+        name="user2"
+        type="text"
+        placeholder="Enter Username"
+        required
+    /> </input>
+
+    <input
+        id="password-signup"
+        type="password"
+        placeholder="Enter Password"
+        required
+    /> </input>
+
+    <input
+        id="verify-password-signup"
+        name="pass"
+        type="password"
+        placeholder="Re-Enter Password"
+        required
+    /> </input>
+
+    <button class="login-button bold" type="submit">Register</button>
+</form>
+
