@@ -1,23 +1,23 @@
 document.addEventListener("DOMContentLoaded", function () {
-  const applyButton = document.getElementById("apply-button");
-  const filteredEstablishmentsContainer = document.getElementById("filtered-establishments-container");
+  const form = document.getElementById("filter-form");
+  const filteredEstablishmentsContainer = document.querySelector(".main-list");
 
-  applyButton.addEventListener("click", function () {
+  form.addEventListener("submit", function (event) {
+    event.preventDefault(); // Prevent the form from submitting traditionally
+
     const selectedRatings = Array.from(document.querySelectorAll('input[name="stars"]:checked'))
-                            .map(checkbox => parseInt(checkbox.value, 10));
-
-    // Construct the query string
+                                 .map(checkbox => parseInt(checkbox.value, 10));
     const queryString = selectedRatings.map(rating => `stars=${rating}`).join("&");
 
-    // Send AJAX request
-    fetch(`/view-establishment.hbs?${queryString}`)
+    fetch(`/restaurants?${queryString}`, {
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
       .then(response => response.text())
-      .then(data => {
-        // Update the content of the filtered-establishments-container with the filtered establishments HTML
-        filteredEstablishmentsContainer.innerHTML = data;
+      .then(html => {
+        filteredEstablishmentsContainer.innerHTML = html;
       })
-      .catch(error => {
-        console.error("Error:", error);
-      });
+      .catch(error => console.error("Error:", error));
   });
 });

@@ -112,7 +112,6 @@ module.exports = function (app) {
       const { stars } = req.query;
       let filter = {};
       if (stars) {
-        // Convert stars to an array of numbers if it's not already an array
         const starsArray = Array.isArray(stars) ? stars.map(Number) : [Number(stars)];
         filter = { main_rating: { $in: starsArray } };
       }
@@ -120,19 +119,34 @@ module.exports = function (app) {
       const restaurant_row1 = restaurants.slice(0, 3);
       const restaurant_row2 = restaurants.slice(3, 6);
       const restaurant_row3 = restaurants.slice(6);
-      res.render("view-establishment", {
-        layout: "index",
-        title: "View Establishments",
-        restaurant_row1,
-        restaurant_row2,
-        restaurant_row3,
-        loginData: null, // Assuming loginData is not needed here
-      });
+  
+      if (req.headers['x-requested-with'] === 'XMLHttpRequest') {
+        // Specify the correct path to the establishments partial
+        res.render("partials/establishments", {
+          layout: false, // Don't use the layout since this is a partial
+          restaurant_row1,
+          restaurant_row2,
+          restaurant_row3
+        });
+      } else {
+        // Full page render for initial load or non-AJAX requests
+        res.render("view-establishment", {
+          layout: "index",
+          title: "View Establishments",
+          restaurant_row1,
+          restaurant_row2,
+          restaurant_row3,
+          loginData: null,
+        });
+      }
     } catch (error) {
       console.error("Error fetching establishments:", error);
       res.status(500).send("Internal Server Error");
     }
   });
+  
+  
+  
   
 
   
