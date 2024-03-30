@@ -2,10 +2,6 @@ const express = require("express");
 const { MongoClient } = require("mongodb");
 const uri = "mongodb://127.0.0.1:27017/eggyDB";
 
-const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
 async function connectToDB() {
   try {
     const client = await MongoClient.connect(uri);
@@ -27,48 +23,38 @@ async function getData(collectionName, filter = {}) {
   }
 }
 
-module.exports = function (app) {
+module.exports = function (app,app_data) {
+  //Data Models or Schemas
+  const restoModel    = app_data['restoModel'];
+  const userModel     = app_data['userModel'];
+  const feedbackModel = app_data['feedbackModel'];
+  const commentModel  = app_data['commentModel'];
+
   // Function to load server data
   async function loadServer(req, res, data) {
     try {
-      const db = await connectToDB();
-      const [restaurants, comments] = await Promise.all([
-        db.collection("restaurants").find({}).toArray(),
-        db
-          .collection("comments")
-          .find({
-            username: { $exists: true },
-            content: { $exists: true },
-            "overall-rating": { $exists: true },
-          })
-          .project({
-            _id: 0,
-            title: 0,
-            "food-rating": 0,
-            "service-rating": 0,
-            "ambiance-rating": 0,
-            date: 0,
-            numLike: 0,
-            numDislike: 0,
-            ownerReplyStatus: 0,
-          })
-          .toArray(),
-      ]);
 
-      // Process comments for each restaurant
-      const commentData = {};
-      for (const resto of restaurants) {
-        commentData[resto.restoName] = comments.filter(
-          (comment) => comment.restoName === resto.restoName
-        );
+      //used the Mini Challenge 3 as reference to retrieve data 
+      const resto = await restoModel.find({}).lean();
+
+      const searchQuery = { restoName : resto[0].restoName}
+      const comments = await commentModel.find(searchQuery).lean();
+      
+      for (let i = 0; i < comments.length; i++){
+        let ratingCountArray = [];
+        comments[i].content = cutShort(comments[i].content);
+        for (let j = 0; j < comments[i]['overall-rating']; j++){
+            ratingCountArray.push(j);
+        }
+        comments[i]['ratingCount'] = ratingCountArray;
       }
 
       res.render("main", {
         layout: "index",
         title: "My Home page",
-        restoData: restaurants.slice(0, 4),
+        restoData: resto,
         loginData: data,
-        commentData,
+        commentData: comments,
       });
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -87,18 +73,56 @@ module.exports = function (app) {
   });
 
   app.post("/update-image", async (req, res) => {
-    let i = Number(req.body.input);
     try {
-      const db = await connectToDB();
-      const images = await db
-        .collection("restaurants")
-        .find({ restoPic: { $exists: true }, restoName: { $exists: true } })
-        .toArray();
-      const image = images[i];
-      resp.send({
+      const images = await restoModel.find({}).lean();
+
+      let i = Number(req.body.input);
+      console.log(`Current index ${i}`);
+
+      //get restoName first
+      const restoNames = await restoModel.find({}, 'restoName').lean();
+
+      //get restaurant comments based on restaurant names from restoNames
+      let resto1 = await commentModel.find({restoName: restoNames[0].restoName}).lean();
+      let resto2 = await commentModel.find({restoName: restoNames[1].restoName}).lean();
+      let resto3 = await commentModel.find({restoName: restoNames[2].restoName}).lean();
+      let resto4 = await commentModel.find({restoName: restoNames[3].restoName}).lean();
+      let resto5 = await commentModel.find({restoName: restoNames[4].restoName}).lean();
+      
+      // console.log(`${restoNames[0].restoName}: ${resto1.length}`);
+      // console.log(`${restoNames[1].restoName}: ${resto2.length}`);
+      // console.log(`${restoNames[2].restoName}: ${resto3.length}`);
+      // console.log(`${restoNames[3].restoName}: ${resto4.length}`);
+      // console.log(`${restoNames[4].restoName}: ${resto5.length}`);
+
+
+      //fetching the current restaurant 
+      let currentComment = {};
+      switch(i){
+        case 0 : currentComment = resto1; break;
+        case 1 : currentComment = resto2; break;
+        case 2 : currentComment = resto3; break;
+        case 3 : currentComment = resto4; break;
+        case 4 : currentComment = resto5; break;
+      }
+
+      //making the stars for the homepage
+      for (let i = 0; i < currentComment.length; i++){
+        let ratingCountArray = [];
+        currentComment[i].content = cutShort(currentComment[i].content);
+        for (let j = 0; j < currentComment[i]['overall-rating']; j++){
+            ratingCountArray.push(j);
+        }
+        currentComment[i]['ratingCount'] = ratingCountArray;
+      }
+
+      console.log(currentComment[0].username);
+
+      res.send({
         index: i,
         url: images[i].restoPic,
         title: images[i].restoName,
+        commentData: currentComment
       });
     } catch (error) {
       console.error("Error fetching images:", error);
@@ -144,15 +168,29 @@ module.exports = function (app) {
       res.status(500).send("Internal Server Error");
     }
   });
+  app.get("/search", async (req, res) => {
+    try {
+      const { query } = req.query; // Assuming the search query parameter is named 'query'
+      let filter = {};
+      if (query) {
+        filter = { restoName: { $regex: new RegExp(query, "i") } }; // Case-insensitive search
+      }
+      const restaurants = await getData("restaurants", filter);
+      const restaurant_row1 = restaurants.slice(0, 3);
+      const restaurant_row2 = restaurants.slice(3, 6);
+      const restaurant_row3 = restaurants.slice(6);
   
-  
-  
-  
-
-  
-  
-  
-  
+      res.render("partials/establishments", {
+        layout: false, // This is a partial
+        restaurant_row1,
+        restaurant_row2,
+        restaurant_row3
+      });
+    } catch (error) {
+      console.error("Error searching establishments:", error);
+      res.status(500).send("Internal Server Error");
+    }
+  });
 
   // Route to create a new user
   app.post("/create-user", async (req, res) => {
@@ -209,6 +247,16 @@ module.exports = function (app) {
     loadServer(req, res, null);
   });
 };
+
+function cutShort(sentence){
+  let newSentence = sentence;
+
+  if (sentence.length > 120){
+    newSentence = sentence.slice(0, 120) + "...";
+  }
+
+  return newSentence;
+}
 
 // // load homepage
 // app.get("/", function (req, resp) {
